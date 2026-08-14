@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { shortCaddyVersion } from '~/composables/useApi'
 import type { Operation, ServerLogResult } from '~/types/api'
 
 const route = useRoute()
@@ -163,7 +164,7 @@ function formatDate(value?: string | null) {
           <div>
             <StatusBadge :status="server.status" :service-active="server.serviceActive" />
             <h2>{{ server.serviceName || 'Caddy' }}</h2>
-            <p>{{ server.caddyVersion || '版本未知' }}</p>
+            <p>{{ shortCaddyVersion(server.caddyVersion) || '版本未知' }}</p>
           </div>
         </div>
         <div class="server-hero__facts">

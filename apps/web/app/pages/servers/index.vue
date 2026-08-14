@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { shortCaddyVersion } from '~/composables/useApi'
+
 useHead({ title: '服务器' })
 const api = useApi()
 const toast = useToast()
@@ -65,7 +67,7 @@ function formatDate(value: string | null) {
           <dl>
             <div><dt>服务</dt><dd>{{ server.serviceName || '待探测' }}</dd></div>
             <div><dt>配置</dt><dd :title="server.configPath || ''">{{ server.configPath || '待探测' }}</dd></div>
-            <div><dt>版本</dt><dd>{{ server.caddyVersion || '未知' }}</dd></div>
+            <div><dt>版本</dt><dd>{{ shortCaddyVersion(server.caddyVersion) || '未知' }}</dd></div>
           </dl>
         </NuxtLink>
         <footer>

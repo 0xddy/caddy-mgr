@@ -152,7 +152,7 @@ function parseSkippedWarning(warning: string): DiscoverySkippedUnit | null {
   return serviceName && reason ? { serviceName, reason } : null
 }
 
-export function shortCaddyVersion(version?: string) {
+export function shortCaddyVersion(version?: string | null) {
   return version?.trim().split(/\s+/, 1)[0] || ''
 }
 
