@@ -6,7 +6,7 @@ services:
     image: caddy-mgr:local
     restart: unless-stopped
     environment:
-      PUBLIC_APP_URL: https://${DOMAIN:?Set DOMAIN in .env}
+      PUBLIC_APP_URL: https://${SITE_ADDRESS:?Set SITE_ADDRESS in .env}
       INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD:?Set INITIAL_ADMIN_PASSWORD in .env}
       SESSION_COOKIE_SECURE: "true"
       TRUST_PROXY: "true"
@@ -22,7 +22,7 @@ services:
       caddy-mgr:
         condition: service_healthy
     environment:
-      DOMAIN: ${DOMAIN:?Set DOMAIN in .env}
+      SITE_ADDRESS: ${SITE_ADDRESS:?Set SITE_ADDRESS in .env}
     ports:
       - "80:80"
       - "443:443"

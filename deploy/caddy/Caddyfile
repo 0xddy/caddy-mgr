@@ -1,4 +1,10 @@
-{$DOMAIN} {
+{$SITE_ADDRESS} {
+	tls {
+		issuer acme {
+			profile shortlived
+		}
+	}
+
 	encode zstd gzip
 	reverse_proxy caddy-mgr:3000
 }
