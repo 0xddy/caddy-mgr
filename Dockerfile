@@ -23,7 +23,7 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm build
 ENV NODE_ENV=production
-RUN pnpm install --frozen-lockfile --prod --ignore-scripts \
+RUN CI=true pnpm install --frozen-lockfile --prod --ignore-scripts \
   && rm -rf \
     apps/api/src \
     apps/web/app \
