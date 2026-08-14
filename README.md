@@ -15,6 +15,7 @@ curl -fsSLO https://raw.githubusercontent.com/0xddy/caddy-mgr/main/docker-compos
 ```dotenv
 # 域名、公网 IPv4，或带方括号的 IPv6；不要填写 https://
 SITE_ADDRESS=caddy.example.com
+# IPv6 再添加：TLS_SERVER_NAME=2001:db8::10
 
 # admin 的初始密码，至少 12 个字符
 INITIAL_ADMIN_PASSWORD=change-this-password

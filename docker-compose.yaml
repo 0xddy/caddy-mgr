@@ -31,7 +31,7 @@ services:
 
 configs:
   caddyfile:
-    content: "${SITE_ADDRESS:?Set SITE_ADDRESS in .env} {\n\ttls {\n\t\tissuer acme {\n\t\t\tprofile shortlived\n\t\t}\n\t}\n\n\tencode zstd gzip\n\treverse_proxy caddy-mgr:3000\n}\n"
+    content: "{\n\tdefault_sni ${TLS_SERVER_NAME:-${SITE_ADDRESS:?Set SITE_ADDRESS in .env}}\n}\n\n${SITE_ADDRESS:?Set SITE_ADDRESS in .env} {\n\ttls {\n\t\tissuer acme {\n\t\t\tprofile shortlived\n\t\t}\n\t}\n\n\tencode zstd gzip\n\treverse_proxy caddy-mgr:3000\n}\n"
 
 volumes:
   caddy_mgr_data:
