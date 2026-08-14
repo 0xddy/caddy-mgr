@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+.nuxt/
+.output/
+.nitro/
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+
+# Runtime state and secrets
+.env
+.env.*
+!.env.example
+!.env.production.example
+var/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.pem
+*.key
+
+# Editors and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.swp
+
+# Logs and temporary files
+*.log
+*.tmp
+.cache/
+.turbo/

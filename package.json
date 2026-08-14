@@ -1,0 +1,49 @@
+{
+  "name": "caddy-mgr",
+  "version": "0.1.0",
+  "private": true,
+  "description": "面向多台 Linux 主机的 Caddy 管理面板",
+  "license": "UNLICENSED",
+  "packageManager": "pnpm@11.19.0",
+  "engines": {
+    "node": ">=24.0.0 <25",
+    "pnpm": ">=11.0.0 <12"
+  },
+  "scripts": {
+    "dev": "pnpm -r --parallel --if-present dev",
+    "dev:api": "pnpm --filter @caddy-mgr/api dev",
+    "dev:web": "pnpm --filter @caddy-mgr/web dev",
+    "build": "pnpm -r --if-present build",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "lint": "pnpm -r --if-present lint && eslint .",
+    "lint:fix": "pnpm -r --if-present lint:fix && eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "pnpm -r --if-present test && pnpm test:scripts",
+    "test:scripts": "node --test scripts/*.test.mjs",
+    "test:unit": "pnpm -r --if-present test:unit",
+    "test:e2e": "pnpm build && pnpm --filter @caddy-mgr/web test:e2e",
+    "smoke:production": "node scripts/smoke-production.mjs",
+    "migration:run": "node scripts/migrate.mjs run",
+    "migration:revert": "node scripts/migrate.mjs revert",
+    "preflight": "node scripts/preflight.mjs",
+    "runtime:prepare": "node scripts/prepare-runtime.mjs",
+    "pm2:start": "pnpm preflight && pnpm runtime:prepare && pm2 start ecosystem.config.cjs --env production",
+    "pm2:restart": "pnpm preflight && pnpm runtime:prepare && pm2 restart ecosystem.config.cjs --env production --update-env",
+    "pm2:reload": "pnpm preflight && pnpm runtime:prepare && pm2 reload ecosystem.config.cjs --env production --update-env",
+    "pm2:stop": "pm2 stop ecosystem.config.cjs",
+    "pm2:delete": "pm2 delete ecosystem.config.cjs",
+    "pm2:logs": "pm2 logs caddy-mgr-api caddy-mgr-web"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "@types/node": "^24.0.0",
+    "eslint": "^9.39.0",
+    "eslint-config-prettier": "^10.1.8",
+    "pm2": "^6.0.13",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.46.0",
+    "vitest": "^3.2.4"
+  }
+}

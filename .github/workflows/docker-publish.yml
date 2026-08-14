@@ -1,0 +1,123 @@
+# 手动发布 Docker 镜像。
+#
+# 登录凭据只在仓库里配置一次，不要写进 workflow 输入：
+#   Settings → Secrets and variables → Actions → Secrets
+#     DOCKER_USERNAME    镜像仓库用户名
+#     DOCKER_PASSWORD    镜像仓库密码或访问令牌（Docker Hub 用 Access Token）
+#   Settings → Secrets and variables → Actions → Variables（可选）
+#     DOCKER_REGISTRY    默认 docker.io；阿里云等填例如 registry.cn-hangzhou.aliyuncs.com
+#     DOCKER_IMAGE       默认 <DOCKER_USERNAME>/caddy-mgr；也可写成完整路径
+#
+# 未配置 DOCKER_USERNAME / DOCKER_PASSWORD 时，会推送到 ghcr.io/<owner>/caddy-mgr，
+# 使用当前仓库的 GITHUB_TOKEN，同样不用每次填写。
+
+name: 发布 Docker 镜像
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 额外标签，例如 0.1.0。每次都会推送 git short SHA
+        required: false
+        type: string
+        default: ''
+      latest:
+        description: 同时打 latest 标签
+        required: false
+        type: boolean
+        default: true
+
+concurrency:
+  group: docker-publish
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve image destination
+        id: dest
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_REGISTRY: ${{ vars.DOCKER_REGISTRY }}
+          DOCKER_IMAGE: ${{ vars.DOCKER_IMAGE }}
+        run: |
+          set -euo pipefail
+          if [ -n "${DOCKER_USERNAME}" ] && [ -z "${DOCKER_PASSWORD}" ]; then
+            echo '已设置 DOCKER_USERNAME，但缺少仓库密钥 DOCKER_PASSWORD' >&2
+            exit 1
+          fi
+          if [ -n "${DOCKER_USERNAME}" ]; then
+            if [ -n "${DOCKER_IMAGE}" ]; then
+              image="${DOCKER_IMAGE}"
+              case "${image}" in
+                *.*/*) registry="${image%%/*}" ;;
+                *) registry="${DOCKER_REGISTRY:-docker.io}" ;;
+              esac
+            else
+              registry="${DOCKER_REGISTRY:-docker.io}"
+              if [ "${registry}" = "docker.io" ]; then
+                image="${DOCKER_USERNAME}/caddy-mgr"
+              else
+                image="${registry}/${DOCKER_USERNAME}/caddy-mgr"
+              fi
+            fi
+          else
+            owner="$(printf '%s' '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
+            registry="ghcr.io"
+            image="ghcr.io/${owner}/caddy-mgr"
+          fi
+          echo "registry=${registry}" >> "${GITHUB_OUTPUT}"
+          echo "image=${image}" >> "${GITHUB_OUTPUT}"
+          echo "Publishing ${image} via ${registry}"
+
+      - name: Log in to Docker Hub or private registry
+        if: ${{ secrets.DOCKER_USERNAME != '' }}
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ steps.dest.outputs.registry }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Log in to GitHub Container Registry
+        if: ${{ secrets.DOCKER_USERNAME == '' }}
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.dest.outputs.image }}
+          tags: |
+            type=raw,value=latest,enable=${{ inputs.latest }}
+            type=raw,value=${{ inputs.tag }},enable=${{ inputs.tag != '' }}
+            type=sha,format=short
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+          sbom: false

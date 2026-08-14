@@ -1,0 +1,75 @@
+import { z } from 'zod';
+
+/** Stable API and persisted operation error codes. Unknown future codes remain parseable. */
+export enum ApiErrorCode {
+  Unauthorized = 'UNAUTHORIZED',
+  InvalidCredentials = 'INVALID_CREDENTIALS',
+  InvalidCaptcha = 'INVALID_CAPTCHA',
+  LoginRateLimited = 'LOGIN_RATE_LIMITED',
+  CaptchaRateLimited = 'CAPTCHA_RATE_LIMITED',
+  InvalidCurrentPassword = 'INVALID_CURRENT_PASSWORD',
+  PasswordTooWeak = 'PASSWORD_TOO_WEAK',
+  NoAccountChanges = 'NO_ACCOUNT_CHANGES',
+  UsernameTaken = 'USERNAME_TAKEN',
+  ServerNotFound = 'SERVER_NOT_FOUND',
+  ServerBusy = 'SERVER_BUSY',
+  CaddyTargetDuplicate = 'CADDY_TARGET_DUPLICATE',
+  HostFingerprintRequired = 'HOST_FINGERPRINT_REQUIRED',
+  HostKeyRequired = 'HOST_KEY_REQUIRED',
+  HostKeyMismatch = 'HOST_KEY_MISMATCH',
+  SshHostKeyScanFailed = 'SSH_HOST_KEY_SCAN_FAILED',
+  SshAuthenticationFailed = 'SSH_AUTHENTICATION_FAILED',
+  SshConnectionFailed = 'SSH_CONNECTION_FAILED',
+  SshConfigurationInvalid = 'SSH_CONFIGURATION_INVALID',
+  SshCommandTimeout = 'SSH_COMMAND_TIMEOUT',
+  SshExecFailed = 'SSH_EXEC_FAILED',
+  SshStreamError = 'SSH_STREAM_ERROR',
+  SftpUnavailable = 'SFTP_UNAVAILABLE',
+  SftpUploadFailed = 'SFTP_UPLOAD_FAILED',
+  SshPasswordRequired = 'SSH_PASSWORD_REQUIRED',
+  SshPrivateKeyRequired = 'SSH_PRIVATE_KEY_REQUIRED',
+  SudoPasswordRequired = 'SUDO_PASSWORD_REQUIRED',
+  InvalidServiceUser = 'INVALID_SERVICE_USER',
+  InvalidRemoteSelection = 'INVALID_REMOTE_SELECTION',
+  UnsupportedAdapter = 'UNSUPPORTED_ADAPTER',
+  ConfigConflict = 'CONFIG_CONFLICT',
+  ConfigTooLarge = 'CONFIG_TOO_LARGE',
+  ConfigNotText = 'CONFIG_NOT_TEXT',
+  CaddyFormatFailed = 'CADDY_FORMAT_FAILED',
+  CaddyReloadFailed = 'CADDY_RELOAD_FAILED',
+  CaddyRestartFailed = 'CADDY_RESTART_FAILED',
+  CaddyServiceInactive = 'CADDY_SERVICE_INACTIVE',
+  CaddyValidationFailed = 'CADDY_VALIDATION_FAILED',
+  RevisionNotFound = 'REVISION_NOT_FOUND',
+  OperationNotFound = 'OPERATION_NOT_FOUND',
+  OperationNotRecoverable = 'OPERATION_NOT_RECOVERABLE',
+  OperationBackupInvalid = 'OPERATION_BACKUP_INVALID',
+  OperationBackupUnavailable = 'OPERATION_BACKUP_UNAVAILABLE',
+  RemoteBackupFailed = 'REMOTE_BACKUP_FAILED',
+  RemoteCandidateInstallFailed = 'REMOTE_CANDIDATE_INSTALL_FAILED',
+  RemoteConfigMetadataInvalid = 'REMOTE_CONFIG_METADATA_INVALID',
+  RemoteConfigNotText = 'REMOTE_CONFIG_NOT_TEXT',
+  RemoteConfigReadFailed = 'REMOTE_CONFIG_READ_FAILED',
+  RemoteConfigTooLarge = 'REMOTE_CONFIG_TOO_LARGE',
+  RemoteConfigTruncated = 'REMOTE_CONFIG_TRUNCATED',
+  RemoteLogsFailed = 'REMOTE_LOGS_FAILED',
+  RemoteReplaceFailed = 'REMOTE_REPLACE_FAILED',
+  RemoteOperationFailed = 'REMOTE_OPERATION_FAILED',
+  RevisionPersistFailed = 'REVISION_PERSIST_FAILED',
+  RollbackReloadFailed = 'ROLLBACK_RELOAD_FAILED',
+  RollbackRestoreFailed = 'ROLLBACK_RESTORE_FAILED',
+  InternalError = 'INTERNAL_ERROR',
+}
+
+export const apiErrorCodeSchema = z.string().min(1);
+
+export const apiErrorSchema = z.object({
+  error: z.object({
+    code: apiErrorCodeSchema,
+    message: z.string(),
+    details: z.unknown().optional(),
+  }),
+});
+
+export type ApiError = z.infer<typeof apiErrorSchema>;
+export type ApiResult<T> = T | ApiError;
