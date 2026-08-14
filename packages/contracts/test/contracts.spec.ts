@@ -33,12 +33,14 @@ describe('wire contracts', () => {
       hostFingerprint: 'SHA256:Abc123+/example',
       serviceName: 'caddy.service',
       caddyBinary: '/usr/bin/caddy',
+      caddyVersion: 'v2.10.0',
       configPath: '/etc/caddy/Caddyfile',
       adapter: CaddyAdapter.Caddyfile,
     });
 
     expect(result.port).toBe(22);
     expect(result.authMethod).toBe('password');
+    expect(result.caddyVersion).toBe('v2.10.0');
   });
 
   it('requires the confirmed host key and CAPTCHA fields used by login', () => {

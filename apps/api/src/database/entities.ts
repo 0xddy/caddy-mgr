@@ -42,6 +42,7 @@ export class CaddyServerEntity {
   @Column({ type: 'text' }) hostFingerprint: string;
   @Column({ type: 'text' }) serviceName: string;
   @Column({ type: 'text' }) caddyBinary: string;
+  @Column({ type: 'text', nullable: true }) caddyVersion: string | null;
   @Column({ type: 'text' }) configPath: string;
   @Column({ type: 'text', default: 'caddyfile' }) adapter: string;
   @Column({ type: 'text', nullable: true }) serviceUser: string | null;
