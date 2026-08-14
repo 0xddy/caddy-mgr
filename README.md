@@ -47,22 +47,3 @@ docker compose down
 ```
 
 不要运行 `docker compose down -v`。应用数据库、加密主密钥和 TLS 证书保存在 Docker volumes 中，删除 volumes 会导致数据丢失。
-
-## 本地开发
-
-需要 Node.js 24 和 pnpm 11：
-
-```bash
-corepack enable
-corepack prepare pnpm@11.19.0 --activate
-pnpm install
-pnpm dev
-```
-
-检查代码：
-
-```bash
-pnpm typecheck
-pnpm test
-pnpm build
-```
