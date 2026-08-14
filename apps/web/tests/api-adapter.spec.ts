@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { safeRedirectPath } from '../app/composables/useAuth';
-import { buildHostKeyRequest, mapDiscovery, normalizeApiError, shortCaddyVersion } from '../app/composables/useApi';
-import type { ServerConnectionInput } from '../app/types/api';
+import { buildCreateServerRequest, buildHostKeyRequest, mapDiscovery, normalizeApiError, shortCaddyVersion } from '../app/composables/useApi';
+import type { CreateServerInput, ServerConnectionInput } from '../app/types/api';
 import { buildApiTarget } from '../server/utils/api-target';
 import {
   INTERNAL_CLIENT_IP_HEADER,
@@ -90,6 +90,26 @@ describe('Nuxt API adapter', () => {
     };
 
     expect(buildHostKeyRequest(connection)).toEqual({ host: '192.0.2.10', port: 22 });
+  });
+
+  it('keeps the probed Caddy version when building the create request', () => {
+    const input: CreateServerInput = {
+      name: 'production',
+      host: '192.0.2.10',
+      port: 22,
+      username: 'root',
+      authMethod: 'password',
+      password: 'ssh-password',
+      privilegeMode: 'root',
+      hostFingerprint: 'SHA256:Abc123+/example',
+      serviceName: 'caddy.service',
+      caddyBinary: '/usr/bin/caddy',
+      caddyVersion: 'v2.10.0',
+      configPath: '/etc/caddy/Caddyfile',
+      adapter: 'caddyfile',
+    };
+
+    expect(buildCreateServerRequest(input)).toMatchObject({ caddyVersion: 'v2.10.0' });
   });
 
   it('preserves query parameters when proxying to Nest', () => {

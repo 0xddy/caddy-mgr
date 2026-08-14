@@ -128,6 +128,7 @@ export const createServerRequestSchema = z
     hostFingerprint: hostFingerprintSchema,
     serviceName: z.string().min(1).max(255),
     caddyBinary: posixAbsolutePathSchema,
+    caddyVersion: z.string().min(1).max(1024).optional(),
     configPath: posixAbsolutePathSchema,
     adapter: z.literal(CaddyAdapter.Caddyfile).default(CaddyAdapter.Caddyfile),
     serviceUser: z.string().max(100).optional(),

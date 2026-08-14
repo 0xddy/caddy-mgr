@@ -105,6 +105,20 @@ function backendConnection(input: ServerConnectionInput) {
   }
 }
 
+export function buildCreateServerRequest(input: CreateServerInput) {
+  return {
+    name: input.name,
+    ...backendConnection(input),
+    serviceName: input.serviceName,
+    caddyBinary: input.caddyBinary,
+    caddyVersion: input.caddyVersion,
+    configPath: input.configPath,
+    adapter: input.adapter,
+    serviceUser: input.serviceUser,
+    workingDirectory: input.workingDirectory,
+  }
+}
+
 export function buildHostKeyRequest(input: Pick<ServerConnectionInput, 'host' | 'port'>) {
   return { host: input.host, port: input.port }
 }
@@ -279,16 +293,7 @@ export function useApi() {
       create: async (input: CreateServerInput) => {
         const detail = await request<BackendServerDetail>('/servers', {
           method: 'POST',
-          body: {
-            name: input.name,
-            ...backendConnection(input),
-            serviceName: input.serviceName,
-            caddyBinary: input.caddyBinary,
-            configPath: input.configPath,
-            adapter: input.adapter,
-            serviceUser: input.serviceUser,
-            workingDirectory: input.workingDirectory,
-          },
+          body: buildCreateServerRequest(input),
         })
         return mapServer(detail, detail) as ServerDetail
       },

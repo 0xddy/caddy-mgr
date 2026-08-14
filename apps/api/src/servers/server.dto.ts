@@ -34,6 +34,7 @@ export class CreateServerDto extends ProbeServerDto {
   @IsString() @Matches(/^SHA256:[A-Za-z0-9+/]+$/) override hostFingerprint = '';
   @IsString() @Length(1, 255) serviceName: string;
   @IsString() @Length(1, 4096) caddyBinary: string;
+  @IsOptional() @IsString() @Length(1, 1024) caddyVersion?: string;
   @IsString() @Length(1, 4096) configPath: string;
   @IsString() @IsIn(['caddyfile']) adapter = 'caddyfile';
   @IsOptional() @IsString() @MaxLength(100) serviceUser?: string;

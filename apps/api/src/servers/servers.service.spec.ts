@@ -19,6 +19,7 @@ const createInput: CreateServerDto = {
   hostFingerprint: 'SHA256:abcdefghijklmnopqrstuvwxyz0123456789ABCD',
   serviceName: 'caddy.service',
   caddyBinary: '/usr/bin/caddy',
+  caddyVersion: 'v2.10.0',
   configPath: '/etc/caddy/Caddyfile',
   adapter: 'caddyfile',
 };
@@ -42,7 +43,12 @@ function harness() {
   const repositoryFind = vi.fn(async (): Promise<CaddyServerEntity[]> => []);
   const repositoryFindOne = vi.fn(async (): Promise<CaddyServerEntity | null> => null);
   const repositoryCreate = vi.fn((value: Partial<CaddyServerEntity>) => value as CaddyServerEntity);
-  const repositorySave = vi.fn(async (value: CaddyServerEntity) => value);
+  const repositorySave = vi.fn(async (value: CaddyServerEntity) => {
+    value.id ||= 'saved-server-id';
+    value.createdAt ||= new Date('2026-08-15T00:00:00.000Z');
+    value.updatedAt ||= new Date('2026-08-15T00:00:00.000Z');
+    return value;
+  });
   const repositoryUpdate = vi.fn(async () => undefined);
   const repositoryRemove = vi.fn(async (value: CaddyServerEntity) => value);
   const repository = {
@@ -69,7 +75,8 @@ function harness() {
     discard: sshDiscard,
     scanHostKey: vi.fn(),
   } as unknown as SshService;
-  const discovery = {} as CaddyDiscoveryService;
+  const discoveryDiscover = vi.fn();
+  const discovery = { discover: discoveryDiscover } as unknown as CaddyDiscoveryService;
   return {
     service: new ServersService(repository, operations, crypto, ssh, discovery),
     repository,
@@ -83,6 +90,7 @@ function harness() {
     sshAcquire,
     sshRelease,
     sshDiscard,
+    discoveryDiscover,
   };
 }
 
@@ -105,6 +113,65 @@ describe('ServersService target identity and SSH errors', () => {
     expect(error.code).toBe('CADDY_TARGET_DUPLICATE');
     expect(error.getStatus()).toBe(409);
     expect(test.repositorySave).not.toHaveBeenCalled();
+  });
+
+  it('persists the Caddy version captured during discovery', async () => {
+    const test = harness();
+
+    await test.service.create(createInput);
+
+    expect(test.repositoryCreate).toHaveBeenCalledWith(expect.objectContaining({
+      caddyVersion: 'v2.10.0',
+    }));
+  });
+
+  it('updates the persisted Caddy version during rediscovery', async () => {
+    const test = harness();
+    const server = {
+      ...savedServer(),
+      name: 'Production',
+      targetKey: `${createInput.hostFingerprint}\n${createInput.serviceName}\n${createInput.configPath}`,
+      serviceName: createInput.serviceName,
+      caddyBinary: createInput.caddyBinary,
+      caddyVersion: 'v2.9.1',
+      configPath: createInput.configPath,
+      adapter: createInput.adapter,
+      serviceUser: null,
+      workingDirectory: '/etc/caddy',
+      supported: true,
+      discoveryJson: null,
+    } as CaddyServerEntity;
+    test.repositoryFindOne.mockResolvedValue(server);
+    test.sshAcquire.mockResolvedValue({});
+    test.discoveryDiscover.mockResolvedValue({
+      supported: true,
+      platform: 'Linux',
+      serviceName: 'caddy.service',
+      serviceNames: ['caddy.service'],
+      caddyBinary: '/usr/bin/caddy',
+      configPath: '/etc/caddy/Caddyfile',
+      adapter: 'caddyfile',
+      serviceUser: null,
+      workingDirectory: '/etc/caddy',
+      version: 'v2.10.0 h1:build-hash',
+      sudoAvailable: true,
+      warnings: [],
+      candidates: [{
+        serviceName: 'caddy.service',
+        caddyBinary: '/usr/bin/caddy',
+        configPath: '/etc/caddy/Caddyfile',
+        adapter: 'caddyfile',
+        version: 'v2.10.0 h1:build-hash',
+      }],
+      skipped: [],
+    });
+
+    await test.service.rediscover(server.id);
+
+    expect(server.caddyVersion).toBe('v2.10.0 h1:build-hash');
+    expect(test.repositorySave).toHaveBeenCalledWith(expect.objectContaining({
+      caddyVersion: 'v2.10.0 h1:build-hash',
+    }));
   });
 
   it('maps a unique-index race to the same stable duplicate-target response', async () => {

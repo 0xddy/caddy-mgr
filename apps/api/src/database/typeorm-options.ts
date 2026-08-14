@@ -6,6 +6,7 @@ import { ENTITIES } from './entities';
 import { InitialSchema1723600000000 } from './migrations/1723600000000-InitialSchema';
 import { TargetIdentity1723600001000 } from './migrations/1723600001000-TargetIdentity';
 import { RevisionSize1723600002000 } from './migrations/1723600002000-RevisionSize';
+import { CaddyVersion1723600003000 } from './migrations/1723600003000-CaddyVersion';
 
 interface SqliteDatabase {
   pragma(statement: string): unknown;
@@ -17,7 +18,12 @@ export const typeormOptions: BetterSqlite3ConnectionOptions = {
   type: 'better-sqlite3',
   database: runtimeConfig.databasePath,
   entities: [...ENTITIES],
-  migrations: [InitialSchema1723600000000, TargetIdentity1723600001000, RevisionSize1723600002000],
+  migrations: [
+    InitialSchema1723600000000,
+    TargetIdentity1723600001000,
+    RevisionSize1723600002000,
+    CaddyVersion1723600003000,
+  ],
   migrationsRun: true,
   synchronize: false,
   logging: process.env.TYPEORM_LOGGING === 'true',

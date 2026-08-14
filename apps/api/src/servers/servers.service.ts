@@ -82,6 +82,7 @@ export class ServersService {
       hostFingerprint: input.hostFingerprint,
       serviceName: input.serviceName,
       caddyBinary: input.caddyBinary,
+      caddyVersion: input.caddyVersion?.trim() || null,
       configPath: input.configPath,
       adapter: input.adapter,
       serviceUser: input.serviceUser || null,
@@ -136,6 +137,7 @@ export class ServersService {
     return this.withSession(server, async (session) => {
       const result = applyPreferredCandidate(await this.discovery.discover(session), server.serviceName);
       server.discoveryJson = JSON.stringify(result);
+      server.caddyVersion = result.version?.trim() || null;
       server.supported = result.supported;
       if (result.supported) {
         this.validateRemoteSelection(
@@ -331,7 +333,7 @@ export class ServersService {
     return {
       id: server.id, name: server.name, host: server.host, port: server.port, username: server.username,
       serviceName: server.serviceName, configPath: server.configPath, supported: server.supported,
-      caddyVersion: discovery?.version ?? null,
+      caddyVersion: server.caddyVersion ?? discovery?.version ?? null,
       lastConnectionStatus: server.lastConnectionStatus,
       lastConnectedAt: server.lastConnectedAt?.toISOString() ?? null,
       createdAt: server.createdAt.toISOString(), updatedAt: server.updatedAt.toISOString(),
