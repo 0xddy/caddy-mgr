@@ -1,0 +1,37 @@
+services:
+  caddy-mgr:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: caddy-mgr:local
+    restart: unless-stopped
+    environment:
+      PUBLIC_APP_URL: https://${DOMAIN:?Set DOMAIN in .env}
+      INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD:?Set INITIAL_ADMIN_PASSWORD in .env}
+      SESSION_COOKIE_SECURE: "true"
+      TRUST_PROXY: "true"
+    volumes:
+      - caddy_mgr_data:/app/var
+    expose:
+      - "3000"
+
+  caddy:
+    image: caddy:2.11.4-alpine
+    restart: unless-stopped
+    depends_on:
+      caddy-mgr:
+        condition: service_healthy
+    environment:
+      DOMAIN: ${DOMAIN:?Set DOMAIN in .env}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/caddy:/etc/caddy:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_mgr_data:
+  caddy_data:
+  caddy_config:
