@@ -84,9 +84,9 @@ docker compose up -d
 # 查看日志
 docker compose logs -f
 
-# 拉取最新镜像并重建容器
-docker compose pull
-docker compose up -d
+# 只拉取并更新 caddy-mgr（不重建 Caddy）
+docker compose pull caddy-mgr
+docker compose up -d --no-deps caddy-mgr
 
 # 停止服务（保留数据卷）
 docker compose down
