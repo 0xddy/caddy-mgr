@@ -19,15 +19,19 @@ services:
     depends_on:
       caddy-mgr:
         condition: service_healthy
-    environment:
-      SITE_ADDRESS: ${SITE_ADDRESS:?Set SITE_ADDRESS in .env}
     ports:
       - "80:80"
       - "443:443"
+    configs:
+      - source: caddyfile
+        target: /etc/caddy/Caddyfile
     volumes:
-      - ./deploy/caddy:/etc/caddy:ro
       - caddy_data:/data
       - caddy_config:/config
+
+configs:
+  caddyfile:
+    content: "${SITE_ADDRESS:?Set SITE_ADDRESS in .env} {\n\ttls {\n\t\tissuer acme {\n\t\t\tprofile shortlived\n\t\t}\n\t}\n\n\tencode zstd gzip\n\treverse_proxy caddy-mgr:3000\n}\n"
 
 volumes:
   caddy_mgr_data:
