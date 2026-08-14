@@ -1,9 +1,7 @@
 services:
   caddy-mgr:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: caddy-mgr:local
+    image: 0xddy/caddy-mgr:latest
+    pull_policy: always
     restart: unless-stopped
     environment:
       PUBLIC_APP_URL: https://${SITE_ADDRESS:?Set SITE_ADDRESS in .env}

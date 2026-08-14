@@ -28,7 +28,7 @@ INITIAL_ADMIN_PASSWORD=请替换为至少12位的强密码
 启动：
 
 ```bash
-docker compose up -d --build
+docker compose up -d
 docker compose ps
 ```
 
@@ -42,7 +42,8 @@ docker compose logs -f caddy caddy-mgr
 
 # 拉取代码并更新
 git pull
-docker compose up -d --build
+docker compose pull
+docker compose up -d
 
 # 停止服务
 docker compose down
