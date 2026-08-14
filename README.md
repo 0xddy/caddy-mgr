@@ -4,6 +4,8 @@
 
 ## Docker Compose 部署
 
+[`docker-compose.yaml`](./docker-compose.yaml) 直接拉取 `0xddy/caddy-mgr:latest`，不在部署服务器编译源码。Caddy 使用官方镜像，负责反向代理、自动 HTTPS 和证书续期。
+
 准备一台安装了 Docker Compose 的服务器，并完成：
 
 - 使用域名时，将 A/AAAA 记录指向该服务器；使用 IP 时，必须是公网 IPv4 或 IPv6。
@@ -24,6 +26,21 @@ INITIAL_ADMIN_PASSWORD=请替换为至少12位的强密码
 ```
 
 `SITE_ADDRESS` 三选一：域名 `caddy.example.com`、公网 IPv4 `203.0.113.10`、公网 IPv6 `[2001:db8::10]`。不要填写 `https://`。
+
+Compose 配置：
+
+| 配置                     | 用途                                    |
+| ------------------------ | --------------------------------------- |
+| `0xddy/caddy-mgr:latest` | caddy-mgr 远程镜像，每次启动检查更新    |
+| `SITE_ADDRESS`           | HTTPS 使用的域名或公网 IP               |
+| `INITIAL_ADMIN_PASSWORD` | 初始用户 `admin` 的密码，至少 12 个字符 |
+| TCP `80`、`443`          | Caddy HTTP/HTTPS 公网入口               |
+| `caddy_mgr_data`         | SQLite 数据库、加密主密钥和日志         |
+| `caddy_data`             | Caddy TLS 证书和私钥                    |
+| `caddy_config`           | Caddy 运行配置                          |
+| `deploy/caddy`           | 只读挂载的反向代理与 TLS 配置           |
+
+应用端口 `3000` 只在 Compose 内部网络暴露，由 Caddy 反向代理，不映射到宿主机。
 
 启动：
 
